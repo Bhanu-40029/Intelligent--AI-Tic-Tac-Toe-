@@ -1,0 +1,729 @@
+<!--<!DOCTYPE html>-->
+<!--<html>-->
+
+<!--<head>-->
+
+<!--    <title>Tic Tac Toe AI Visualizer</title>-->
+<!--<style>-->
+<!--/*body {*/-->
+<!--/*text-align: center;*/-->
+<!--/*font-family: Arial;*/-->
+<!--/*background-color: #f5f5dc;*/-->
+<!--/*}*/-->
+<!--/*.container {*/-->
+<!--/*display: flex;*/-->
+<!--/*justify-content: center;*/-->
+<!--/*align-items: flex-start;*/-->
+<!--/*gap: 30px;*/-->
+<!--/*margin-top: 20px;*/-->
+<!--/*}*/-->
+<!--/*.grid {*/-->
+<!--/*display: grid;*/-->
+<!--/*grid-template-columns: repeat(3, 100px);*/-->
+<!--/*grid-template-rows: repeat(3, 100px);*/-->
+<!--/*}*/-->
+
+<!--/*.cell {*/-->
+<!--/*width: 100px;*/-->
+<!--/*height: 100px;*/-->
+<!--/*background: white;*/-->
+<!--/*border: 2px solid black;*/-->
+<!--/*display: flex;*/-->
+<!--/*justify-content: center;*/-->
+<!--/*align-items: center;*/-->
+<!--/*font-size: 40px;*/-->
+<!--/*cursor: pointer;*/-->
+<!--/*}*/-->
+
+<!--/*.panel {*/-->
+<!--/*width: 350px;*/-->
+<!--/*text-align: left;*/-->
+<!--/*}*/-->
+
+<!--/*button {*/-->
+<!--/*padding: 10px;*/-->
+<!--/*margin: 5px;*/-->
+
+<!--/*}*/-->
+<!--/*.output-box {*/-->
+<!--/*background: white;*/-->
+<!--/*border: 1px solid black;*/-->
+<!--/*height: 320px;*/-->
+<!--/*overflow-y: auto;*/-->
+<!--/*padding: 10px;*/-->
+<!--/*}*/-->
+<!--/*pre {*/-->
+<!--/*margin: 5px 0;*/-->
+<!--/*}*/-->
+<!--    /* 1. Modern Foundation */-->
+<!--    :root {-->
+<!--        &#45;&#45;primary: #4a90e2;-->
+<!--        &#45;&#45;secondary: #f39c12;-->
+<!--        &#45;&#45;bg: #f8f9fa;-->
+<!--        &#45;&#45;cell-bg: #ffffff;-->
+<!--        &#45;&#45;text: #333;-->
+<!--    }-->
+
+<!--    body {-->
+<!--        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;-->
+<!--        text-align: center;-->
+<!--        background-color: var(&#45;&#45;bg);-->
+<!--        color: var(&#45;&#45;text);-->
+<!--        margin: 0;-->
+<!--        padding: 20px;-->
+<!--    }-->
+
+<!--    /* 2. Layout Container */-->
+<!--    .container {-->
+<!--        display: flex;-->
+<!--        justify-content: center;-->
+<!--        align-items: flex-start;-->
+<!--        gap: 50px;-->
+<!--        margin-top: 30px;-->
+<!--        flex-wrap: wrap; /* Responsive */-->
+<!--    }-->
+
+<!--    /* 3. The Grid */-->
+<!--    .grid {-->
+<!--        display: grid;-->
+<!--        grid-template-columns: repeat(3, 100px);-->
+<!--        grid-template-rows: repeat(3, 100px);-->
+<!--        gap: 8px;-->
+<!--        background-color: #ddd;-->
+<!--        padding: 8px;-->
+<!--        border-radius: 8px;-->
+<!--        box-shadow: 0 4px 15px rgba(0,0,0,0.1);-->
+<!--    }-->
+
+<!--    .cell {-->
+<!--        width: 100px;-->
+<!--        height: 100px;-->
+<!--        background: var(&#45;&#45;cell-bg);-->
+<!--        display: flex;-->
+<!--        justify-content: center;-->
+<!--        align-items: center;-->
+<!--        font-size: 40px;-->
+<!--        font-weight: bold;-->
+<!--        cursor: pointer;-->
+<!--        transition: background 0.3s, transform 0.1s;-->
+<!--        border-radius: 4px;-->
+<!--    }-->
+
+<!--    .cell:hover { background-color: #f0f7ff; }-->
+<!--    .cell:active { transform: scale(0.95); }-->
+
+<!--    /* 4. Controls & Output Panel */-->
+<!--    .panel { width: 350px; text-align: left; }-->
+
+<!--    button {-->
+<!--        padding: 10px 20px;-->
+<!--        margin: 5px;-->
+<!--        border: none;-->
+<!--        border-radius: 5px;-->
+<!--        background-color: var(&#45;&#45;primary);-->
+<!--        color: white;-->
+<!--        cursor: pointer;-->
+<!--        font-weight: bold;-->
+<!--        transition: opacity 0.2s;-->
+<!--    }-->
+
+<!--    button:hover { opacity: 0.9; }-->
+
+<!--    .output-box {-->
+<!--        background: white;-->
+<!--        border: 1px solid #ddd;-->
+<!--        border-radius: 8px;-->
+<!--        height: 320px;-->
+<!--        overflow-y: auto;-->
+<!--        padding: 15px;-->
+<!--        font-family: 'Courier New', Courier, monospace;-->
+<!--        box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);-->
+<!--    }-->
+
+<!--    pre { margin: 5px 0; font-size: 13px; color: #555; }-->
+<!--</style>-->
+
+<!--</head>-->
+
+<!--<body>-->
+
+<!--<h1>Tic Tac Toe AI Visualizer</h1>-->
+
+<!--<div class="container">-->
+
+<!--    &lt;!&ndash; MAIN BOARD &ndash;&gt;-->
+
+<!--    <div class="grid" id="grid"></div>-->
+
+
+<!--    &lt;!&ndash; CONTROL PANEL &ndash;&gt;-->
+
+<!--    <div class="panel">-->
+
+<!--        <button onclick="runBFS()">BFS</button>-->
+
+<!--        <button onclick="runDFS()">DFS</button>-->
+
+<!--        <button onclick="runUCS()">UCS</button>-->
+
+<!--        <button onclick="runGreedy()">Greedy</button>-->
+
+<!--        <button onclick="runAstar()">A*</button>-->
+
+<!--        <button onclick="runCSP()">CSP</button>-->
+
+<!--        <button onclick="runMinimax()">Minimax</button>-->
+
+<!--        <button onclick="runAlphaBeta()">Alpha-Beta</button>-->
+
+<!--        <button onclick="runConditionalProbability()">Conditional Probability</button>-->
+
+<!--        <button onclick="runBayes()">-->
+<!--    Bayes Theorem-->
+<!--</button>-->
+
+<!--        <button onclick="runBayesianNetwork()">-->
+<!--    Bayesian Network-->
+<!--</button>-->
+
+<!--        <br>-->
+
+<!--        <button onclick="togglePause()" id="pauseBtn">-->
+<!--            Pause-->
+<!--        </button>-->
+
+<!--        <button onclick="resetBoard()">-->
+<!--            Reset-->
+<!--        </button>-->
+
+<!--        <h3>Output</h3>-->
+
+<!--        <div id="output" class="output-box"></div>-->
+
+<!--    </div>-->
+
+<!--</div>-->
+
+
+<!--<script>-->
+
+<!--let board = Array(9).fill('');-->
+
+<!--let isPaused = false;-->
+
+<!--let timer = null;-->
+
+<!--let currentData = [];-->
+
+<!--let currentIndex = 0;-->
+
+<!--let gameOver = false;-->
+
+
+<!--// &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; CREATE GRID &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; //-->
+
+<!--function createGrid() {-->
+
+<!--    let grid = document.getElementById("grid");-->
+
+<!--    grid.innerHTML = '';-->
+
+<!--    for(let i=0;i<9;i++) {-->
+
+<!--        let cell = document.createElement("div");-->
+
+<!--        cell.className = "cell";-->
+
+<!--        cell.onclick = () => {-->
+
+<!--            // STOP IF GAME OVER-->
+
+<!--            if(gameOver)-->
+<!--                return;-->
+
+<!--            // HUMAN ALWAYS X-->
+
+<!--            if(board[i] === '') {-->
+
+<!--                board[i] = 'X';-->
+
+<!--                updateUI();-->
+
+<!--                checkGameStatus();-->
+<!--            }-->
+<!--        };-->
+
+<!--        grid.appendChild(cell);-->
+<!--    }-->
+<!--}-->
+
+
+<!--// &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; UPDATE UI &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; //-->
+
+<!--function updateUI() {-->
+
+<!--    document.querySelectorAll(".cell")-->
+<!--    .forEach((cell,i)=>{-->
+
+<!--        cell.innerText = board[i];-->
+<!--    });-->
+<!--}-->
+
+
+<!--// &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; CHECK GAME STATUS &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; //-->
+
+<!--function checkGameStatus() {-->
+
+<!--    let wins = [-->
+
+<!--        [0,1,2],-->
+<!--        [3,4,5],-->
+<!--        [6,7,8],-->
+
+<!--        [0,3,6],-->
+<!--        [1,4,7],-->
+<!--        [2,5,8],-->
+
+<!--        [0,4,8],-->
+<!--        [2,4,6]-->
+<!--    ];-->
+
+<!--    // CHECK WINNER-->
+
+<!--    for(let pattern of wins) {-->
+
+<!--        let [a,b,c] = pattern;-->
+
+<!--        if(-->
+
+<!--            board[a] !== '' &&-->
+
+<!--            board[a] === board[b] &&-->
+
+<!--            board[a] === board[c]-->
+<!--        ){-->
+
+<!--            gameOver = true;-->
+
+<!--            clearTimeout(timer);-->
+
+<!--            setTimeout(()=>{-->
+
+<!--                alert(board[a] + " Wins!");-->
+
+<!--            },100);-->
+
+<!--            return true;-->
+<!--        }-->
+<!--    }-->
+
+<!--    // CHECK DRAW-->
+
+<!--    if(!board.includes('')){-->
+
+<!--        gameOver = true;-->
+
+<!--        clearTimeout(timer);-->
+
+<!--        setTimeout(()=>{-->
+
+<!--            alert("Draw Match");-->
+
+<!--        },100);-->
+
+<!--        return true;-->
+<!--    }-->
+
+<!--    return false;-->
+<!--}-->
+
+
+<!--// &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; RESET &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; //-->
+
+<!--function resetBoard() {-->
+
+<!--    board = Array(9).fill('');-->
+
+<!--    gameOver = false;-->
+
+<!--    updateUI();-->
+
+<!--    document.getElementById("output").innerHTML = "";-->
+
+<!--    currentData = [];-->
+
+<!--    currentIndex = 0;-->
+
+<!--    clearTimeout(timer);-->
+<!--}-->
+
+
+<!--// &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; START ALGORITHM &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; //-->
+
+<!--function startAlgorithm(url) {-->
+
+<!--    if(gameOver)-->
+<!--        return;-->
+
+<!--    clearTimeout(timer);-->
+
+<!--    fetch(url, {-->
+
+<!--        method:"POST",-->
+
+<!--        headers:{-->
+<!--            "Content-Type":"application/json"-->
+<!--        },-->
+
+<!--        body:JSON.stringify({-->
+<!--            board:board-->
+<!--        })-->
+
+<!--    })-->
+
+<!--    .then(res=>res.json())-->
+
+<!--    .then(data=>{-->
+
+<!--        if(data.message){-->
+
+<!--            alert(data.message);-->
+
+<!--            return;-->
+<!--        }-->
+
+<!--        currentData = data;-->
+
+<!--        currentIndex = 0;-->
+
+<!--        isPaused = false;-->
+
+<!--        document.getElementById("pauseBtn")-->
+<!--        .innerText = "Pause";-->
+
+<!--        document.getElementById("output")-->
+<!--        .innerHTML = "";-->
+
+<!--        showNext();-->
+<!--    });-->
+<!--}-->
+
+
+<!--// &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; BUTTONS &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; //-->
+
+<!--function runBFS(){ startAlgorithm("/run_bfs"); }-->
+
+<!--function runDFS(){ startAlgorithm("/run_dfs"); }-->
+
+<!--function runUCS(){ startAlgorithm("/run_ucs"); }-->
+
+<!--function runGreedy(){ startAlgorithm("/run_greedy"); }-->
+
+<!--function runAstar(){ startAlgorithm("/run_astar"); }-->
+
+<!--function runCSP(){ startAlgorithm("/run_csp"); }-->
+
+<!--function runMinimax(){ startAlgorithm("/run_minimax"); }-->
+<!--function runAlphaBeta(){startAlgorithm("/run_alphabeta"); }-->
+
+
+<!--// &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; SHOW NEXT &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; //-->
+
+<!--function showNext() {-->
+
+<!--    if(isPaused || currentIndex >= currentData.length)-->
+<!--        return;-->
+
+<!--    let node = currentData[currentIndex];-->
+
+<!--    // BEST MOVE-->
+
+<!--    if(node.best_move){-->
+
+<!--        document.getElementById("output").innerHTML +=-->
+<!--        `<pre>-->
+<!--BEST MOVE : ${node.best_move}-->
+<!--BEST SCORE : ${node.best_score}-->
+<!-- -&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
+<!--</pre>`;-->
+<!--    }-->
+
+<!--    // MINIMAX / ALPHA-BETA STATISTICS-->
+
+<!--    if(node.traversal_size !== undefined ||-->
+<!--       node.nodes_visited !== undefined){-->
+
+<!--        document.getElementById("output").innerHTML +=-->
+<!--`<pre>-->
+<!--Algorithm : ${node.algorithm || ""}-->
+
+<!--Nodes Visited : ${node.nodes_visited}-->
+
+<!--Traversal Size : ${node.traversal_size}-->
+
+<!--AI Wins : ${node.ai_wins}-->
+
+<!--Human Wins : ${node.human_wins}-->
+
+<!--Draws : ${node.draws}-->
+
+<!--AI Win Probability : ${node.ai_probability} %-->
+
+<!--Human Win Probability : ${node.human_probability} %-->
+
+<!--Draw Probability : ${node.draw_probability} %-->
+
+<!-- -&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
+<!--</pre>`;-->
+<!--        currentIndex++;-->
+
+<!--        timer = setTimeout(showNext,800);-->
+
+<!--        return;-->
+<!--    }-->
+
+<!--    let s = node.state;-->
+
+<!--    if(!s){-->
+
+<!--        currentIndex++;-->
+
+<!--        timer = setTimeout(showNext,800);-->
+
+<!--        return;-->
+<!--    }-->
+
+<!--    board = s.slice();-->
+
+<!--    updateUI();-->
+
+<!--    if(checkGameStatus()){-->
+
+<!--        return;-->
+<!--    }-->
+
+<!--    let display = s.map(-->
+<!--        x => x === '' ? '_' : x-->
+<!--    );-->
+
+<!--    let text =-->
+<!--`Node ${currentIndex + 1}-->
+
+<!--${display[0]} ${display[1]} ${display[2]}-->
+<!--${display[3]} ${display[4]} ${display[5]}-->
+<!--${display[6]} ${display[7]} ${display[8]}-->
+
+<!--Path: ${node.path ? node.path.join(' → ') : ""}-->
+
+<!--Level: ${node.level}-->
+
+<!--${node.cost !== undefined ?-->
+<!--"Cost: " + node.cost : ""}-->
+
+<!--${node.heuristic !== undefined ?-->
+<!--"Heuristic: " + node.heuristic : ""}-->
+
+<!--${node.f !== undefined ?-->
+<!--"f(n): " + node.f : ""}-->
+
+<!--${node.score !== undefined ?-->
+<!--"Score: " + node.score : ""}-->
+
+<!--${node.alpha !== undefined ?-->
+<!--"Alpha: " + node.alpha : ""}-->
+
+<!--${node.beta !== undefined ?-->
+<!--"Beta: " + node.beta : ""}-->
+
+<!-- -&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;`;-->
+
+<!--    document.getElementById("output").innerHTML +=-->
+<!--        "<pre>" + text + "</pre>";-->
+
+<!--    currentIndex++;-->
+
+<!--    timer = setTimeout(showNext,800);-->
+<!--}-->
+<!--// &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; PAUSE &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; //-->
+
+<!--function togglePause(){-->
+
+<!--    isPaused = !isPaused;-->
+
+<!--    let btn =-->
+<!--        document.getElementById("pauseBtn");-->
+
+<!--    if(isPaused){-->
+
+<!--        btn.innerText = "Resume";-->
+
+<!--        clearTimeout(timer);-->
+
+<!--    } else {-->
+
+<!--        btn.innerText = "Pause";-->
+
+<!--        timer = setTimeout(showNext,0);-->
+<!--    }-->
+<!--}-->
+
+<!--function runConditionalProbability(){-->
+
+<!--    fetch("/run_conditional_probability",{-->
+
+<!--        method:"POST",-->
+
+<!--        headers:{-->
+<!--            "Content-Type":"application/json"-->
+<!--        },-->
+
+<!--        body:JSON.stringify({-->
+<!--            board:board-->
+<!--        })-->
+
+<!--    })-->
+
+<!--    .then(res=>res.json())-->
+
+<!--    .then(data=>{-->
+
+<!--        document.getElementById("output").innerHTML +=-->
+<!--        `<pre>-->
+
+<!--CONDITIONAL PROBABILITY-->
+
+<!--AI Wins      : ${data.ai_wins}-->
+
+<!--Human Wins   : ${data.human_wins}-->
+
+<!--Draws        : ${data.draws}-->
+
+<!--Total States : ${data.total_outcomes}-->
+
+<!--P(AI Win | Current Board)-->
+
+<!--= ${data.probability}-->
+
+<!--= ${data.percentage} %-->
+
+<!-- -&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
+
+<!--</pre>`;-->
+<!--    });-->
+<!--}-->
+
+<!--function runBayes(){-->
+
+<!--    fetch("/run_bayes",{-->
+
+<!--        method:"POST",-->
+
+<!--        headers:{-->
+<!--            "Content-Type":"application/json"-->
+<!--        },-->
+
+<!--        body:JSON.stringify({-->
+<!--            board:board-->
+<!--        })-->
+
+<!--    })-->
+
+<!--    .then(res=>res.json())-->
+
+<!--    .then(data=>{-->
+
+<!--        document.getElementById("output").innerHTML +=-->
+<!--        `<pre>-->
+
+<!--BAYES THEOREM-->
+
+<!--Prior Probability-->
+
+<!--= ${data.prior}-->
+
+<!--Likelihood-->
+
+<!--= ${data.likelihood}-->
+
+<!--Evidence-->
+
+<!--= ${data.evidence}-->
+
+<!--Posterior Probability-->
+
+<!--= ${data.posterior}-->
+
+<!--Posterior %-->
+
+<!--= ${data.posterior_percentage} %-->
+
+<!--AI Wins : ${data.ai_wins}-->
+
+<!--Human Wins : ${data.human_wins}-->
+
+<!--Draws : ${data.draws}-->
+
+<!-- -&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
+
+<!--</pre>`;-->
+<!--    });-->
+<!--}-->
+
+
+
+
+<!--function runBayesianNetwork(){-->
+
+<!--    fetch("/run_bayesian_network",{-->
+
+<!--        method:"POST",-->
+
+<!--        headers:{-->
+<!--            "Content-Type":"application/json"-->
+<!--        },-->
+
+<!--        body:JSON.stringify({-->
+<!--            board:board-->
+<!--        })-->
+
+<!--    })-->
+
+<!--    .then(res=>res.json())-->
+
+<!--    .then(data=>{-->
+
+<!--        document.getElementById("output").innerHTML +=-->
+<!--        `<pre>-->
+
+<!--BAYESIAN NETWORK-->
+
+<!--Center Occupied :-->
+
+<!--${data.center_occupied}-->
+
+<!--Two In A Row :-->
+
+<!--${data.two_in_row}-->
+
+<!--AI Win Probability :-->
+
+<!--${data.ai_win_probability} %-->
+
+<!--Network :-->
+
+<!--${data.network}-->
+
+<!-- -&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
+
+<!--</pre>`;-->
+<!--    });-->
+<!--}-->
+<!--// &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; INITIALIZE &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; //-->
+
+<!--createGrid();-->
+
+<!--</script>-->
+
+<!--</body>-->
+
+<!--</html>-->

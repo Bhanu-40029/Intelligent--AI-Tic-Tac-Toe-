@@ -1,0 +1,1123 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tic Tac Toe AI Visualizer</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Share+Tech+Mono&family=Inter:wght@300;400;500&display=swap');
+
+  :root {
+    --bg:        #0a0e1a;
+    --surface:   #111827;
+    --surface2:  #1a2235;
+    --border:    #1e3a5f;
+    --accent:    #00d4ff;
+    --accent2:   #7c3aed;
+    --green:     #00ff88;
+    --red:       #ff4466;
+    --yellow:    #ffd600;
+    --text:      #e2e8f0;
+    --muted:     #64748b;
+    --x-color:   #00d4ff;
+    --o-color:   #ff4466;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  header {
+    text-align: center;
+    padding: 28px 20px 20px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #0d1b2e 0%, var(--bg) 100%);
+    position: relative;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 50%;
+    transform: translateX(-50%);
+    width: 200px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+  .logo-title {
+    font-family: 'Orbitron', monospace;
+    font-weight: 800;
+    font-size: clamp(1.4rem, 3vw, 2.2rem);
+    letter-spacing: 0.08em;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .subtitle {
+    font-size: 0.8rem;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    padding: 4px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--accent);
+    background: rgba(0,212,255,0.05);
+  }
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* ── MAIN LAYOUT ── */
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 340px 1fr;
+    grid-template-rows: auto auto;
+    gap: 20px;
+    max-width: 1300px;
+    margin: 24px auto;
+    padding: 0 20px;
+  }
+
+  /* PANELS */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .panel-header {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Orbitron', monospace;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .panel-header-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+
+  /* ── BOARD AREA (center col) ── */
+  .board-col {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .turn-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+  .turn-label span { color: var(--accent); }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(3, 110px);
+    grid-template-rows: repeat(3, 110px);
+    gap: 0;
+    position: relative;
+  }
+
+  /* grid lines drawn via borders */
+  .cell {
+    width: 110px; height: 110px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Orbitron', monospace;
+    font-size: 2.8rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.15s;
+    position: relative;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    user-select: none;
+  }
+  .cell:hover:not(.taken) {
+    background: var(--surface2);
+  }
+  .cell.X { color: var(--x-color); text-shadow: 0 0 20px rgba(0,212,255,0.6); }
+  .cell.O { color: var(--o-color); text-shadow: 0 0 20px rgba(255,68,102,0.6); }
+
+  /* win highlight */
+  .cell.win-cell {
+    background: rgba(0,255,136,0.08) !important;
+    border-color: var(--green) !important;
+  }
+
+  /* board label overlay */
+  .cell-label {
+    position: absolute;
+    top: 4px; left: 6px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--border);
+  }
+
+  /* ── CONTROLS ── */
+  .controls-panel {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .algo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .btn {
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface2);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0,212,255,0.06);
+    box-shadow: 0 0 12px rgba(0,212,255,0.15);
+  }
+  .btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0,212,255,0.1);
+  }
+  .btn.btn-minimax { border-color: #7c3aed44; }
+  .btn.btn-minimax:hover, .btn.btn-minimax.active {
+    border-color: var(--accent2);
+    color: var(--accent2);
+    background: rgba(124,58,237,0.1);
+    box-shadow: 0 0 12px rgba(124,58,237,0.2);
+  }
+  .btn.btn-alpha  { border-color: #ff446644; }
+  .btn.btn-alpha:hover, .btn.btn-alpha.active {
+    border-color: var(--red);
+    color: var(--red);
+    background: rgba(255,68,102,0.1);
+    box-shadow: 0 0 12px rgba(255,68,102,0.2);
+  }
+  .btn.btn-green { border-color: #00ff8844; }
+  .btn.btn-green:hover {
+    border-color: var(--green);
+    color: var(--green);
+    background: rgba(0,255,136,0.08);
+  }
+
+  .btn-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .btn-pause {
+    background: rgba(255,214,0,0.08);
+    border-color: #ffd60044;
+    color: var(--yellow);
+  }
+  .btn-pause:hover {
+    border-color: var(--yellow);
+    box-shadow: 0 0 12px rgba(255,214,0,0.2);
+  }
+  .btn-reset {
+    background: rgba(255,68,102,0.06);
+    border-color: #ff446644;
+    color: var(--red);
+  }
+  .btn-reset:hover {
+    border-color: var(--red);
+    box-shadow: 0 0 12px rgba(255,68,102,0.2);
+  }
+
+  .section-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  /* ── NODE COMPARISON BOX ── */
+  .compare-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+  }
+  .compare-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 5px 0;
+  }
+  .compare-label { color: var(--muted); }
+  .compare-val { font-weight: 600; }
+  .compare-val.mm  { color: var(--accent2); }
+  .compare-val.ab  { color: var(--red); }
+  .compare-val.saved { color: var(--green); }
+
+  .bar-track {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 8px;
+    overflow: hidden;
+    position: relative;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+  .bar-mm  { background: var(--accent2); }
+  .bar-ab  { background: var(--red); }
+  .bar-saved { background: var(--green); }
+
+  /* ── OUTPUT LOG (left panel) ── */
+  .log-col {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .log-body {
+    height: 420px;
+    overflow-y: auto;
+    padding: 10px 14px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    line-height: 1.7;
+    scroll-behavior: smooth;
+  }
+  .log-body::-webkit-scrollbar { width: 4px; }
+  .log-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .log-entry {
+    border-bottom: 1px solid var(--border);
+    padding: 8px 0;
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:none} }
+  .log-entry .node-num { color: var(--accent); }
+  .log-entry .board-vis {
+    color: var(--text);
+    letter-spacing: 0.1em;
+    margin: 4px 0;
+  }
+  .log-entry .board-vis .lx { color: var(--x-color); font-weight: 700; }
+  .log-entry .board-vis .lo { color: var(--o-color); font-weight: 700; }
+  .log-entry .meta { color: var(--muted); }
+  .log-entry .best { color: var(--green); font-weight: 700; }
+  .log-stats {
+    background: var(--surface2);
+    border-left: 3px solid var(--accent2);
+    padding: 8px 10px;
+    margin: 4px 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .log-stats .stat-line { display: flex; justify-content: space-between; }
+  .log-stats .stat-key { color: var(--muted); }
+  .log-stats .stat-val { color: var(--text); }
+
+  /* ── GRAPH PANEL (right col) ── */
+  .graph-col {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .graph-body {
+    padding: 14px;
+    height: 420px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  canvas#nodeChart {
+    border-radius: 8px;
+    background: var(--surface2);
+  }
+
+  /* Probability bars */
+  .prob-section { display: flex; flex-direction: column; gap: 8px; }
+  .prob-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+  }
+  .prob-name { width: 70px; color: var(--muted); flex-shrink: 0; }
+  .prob-track {
+    flex: 1;
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .prob-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.6s ease;
+  }
+  .prob-ai   { background: linear-gradient(90deg, var(--red), #ff6688); }
+  .prob-human{ background: linear-gradient(90deg, var(--x-color), #66e8ff); }
+  .prob-draw { background: linear-gradient(90deg, var(--yellow), #ffe566); }
+  .prob-pct  { width: 42px; text-align: right; color: var(--text); }
+
+  /* ── BOTTOM ROW (CSP constraints) ── */
+  .bottom-row {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  .constraint-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .c-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .c-icon.c1 { background: rgba(0,212,255,0.1); }
+  .c-icon.c2 { background: rgba(124,58,237,0.1); }
+  .c-icon.c3 { background: rgba(0,255,136,0.1); }
+  .c-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .c-desc {
+    font-size: 0.75rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .c-status {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    margin-top: 6px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    display: inline-block;
+  }
+  .c-status.ok  { background: rgba(0,255,136,0.1); color: var(--green); border: 1px solid var(--green); }
+  .c-status.err { background: rgba(255,68,102,0.1); color: var(--red);   border: 1px solid var(--red); }
+
+  /* Game over overlay */
+  .gameover-banner {
+    display: none;
+    text-align: center;
+    padding: 10px;
+    border-radius: 8px;
+    font-family: 'Orbitron', monospace;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    margin-top: 6px;
+  }
+  .gameover-banner.show { display: block; }
+  .gameover-banner.win-x { background: rgba(0,212,255,0.1); color: var(--x-color); border: 1px solid var(--x-color); }
+  .gameover-banner.win-o { background: rgba(255,68,102,0.1); color: var(--o-color); border: 1px solid var(--o-color); }
+  .gameover-banner.draw  { background: rgba(255,214,0,0.1);  color: var(--yellow);  border: 1px solid var(--yellow); }
+
+  /* Responsive */
+  @media(max-width: 1100px) {
+    .layout { grid-template-columns: 1fr 1fr; }
+    .board-col { grid-column: 1; }
+    .graph-col { grid-column: 2; grid-row: 1; }
+    .log-col   { grid-column: 1 / -1; grid-row: 2; }
+    .bottom-row{ grid-column: 1 / -1; grid-row: 3; }
+  }
+  @media(max-width: 700px) {
+    .layout { grid-template-columns: 1fr; }
+    .board-col, .graph-col, .log-col { grid-column: 1; }
+    .bottom-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-title">TIC TAC TOE &nbsp;·&nbsp; AI VISUALIZER</div>
+  <div class="subtitle">Computational Foundations for AI — Search Algorithms</div>
+  <div class="status-badge">
+    <span class="status-dot"></span>
+    <span id="statusText">READY · HUMAN TURN</span>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- ── LEFT: OUTPUT LOG ── -->
+  <div class="panel log-col">
+    <div class="panel-header">
+      <span class="panel-header-dot" style="background:var(--accent)"></span>
+      TRAVERSAL LOG
+    </div>
+    <div class="log-body" id="output"></div>
+  </div>
+
+  <!-- ── CENTER: BOARD + CONTROLS ── -->
+  <div class="board-col">
+    <div class="turn-label">TURN: <span id="turnIndicator">X (You)</span></div>
+
+    <div class="board" id="grid"></div>
+
+    <div class="gameover-banner" id="gameoverBanner"></div>
+
+    <div class="panel" style="width:100%;margin-top:4px">
+      <div class="panel-header">
+        <span class="panel-header-dot" style="background:var(--accent2)"></span>
+        ALGORITHMS
+      </div>
+      <div class="controls-panel">
+        <div class="section-label">Search</div>
+        <div class="algo-grid">
+          <button class="btn" onclick="runAlgo('bfs',this)">BFS</button>
+          <button class="btn" onclick="runAlgo('dfs',this)">DFS</button>
+          <button class="btn" onclick="runAlgo('ucs',this)">UCS</button>
+          <button class="btn" onclick="runAlgo('greedy',this)">Greedy BFS</button>
+          <button class="btn" onclick="runAlgo('astar',this)">A* Search</button>
+          <button class="btn" onclick="runAlgo('csp',this)">CSP + DFS</button>
+        </div>
+
+        <div class="section-label" style="margin-top:4px">Adversarial</div>
+        <div class="algo-grid">
+          <button class="btn btn-minimax" onclick="runAlgo('minimax',this)">Minimax</button>
+          <button class="btn btn-alpha"   onclick="runAlgo('alphabeta',this)">α-β Pruning</button>
+        </div>
+
+        <div class="section-label" style="margin-top:4px">Probabilistic</div>
+        <div class="algo-grid">
+          <button class="btn btn-green" onclick="runConditionalProbability()">Cond. Prob.</button>
+          <button class="btn btn-green" onclick="runBayes()">Bayes</button>
+          <button class="btn btn-green" style="grid-column:1/-1" onclick="runBayesianNetwork()">Bayesian Network</button>
+        </div>
+
+        <div class="btn-row" style="margin-top:6px">
+          <button class="btn btn-pause" id="pauseBtn" onclick="togglePause()">⏸ Pause</button>
+          <button class="btn btn-reset" onclick="resetBoard()">↺ Reset</button>
+        </div>
+
+        <!-- Node comparison -->
+        <div class="section-label" style="margin-top:4px">Node Count Comparison</div>
+        <div class="compare-box">
+          <div class="compare-row">
+            <span class="compare-label">Minimax</span>
+            <span class="compare-val mm" id="mmCount">—</span>
+          </div>
+          <div class="bar-track"><div class="bar-fill bar-mm" id="mmBar" style="width:0%"></div></div>
+          <div class="compare-row" style="margin-top:6px">
+            <span class="compare-label">Alpha-Beta</span>
+            <span class="compare-val ab" id="abCount">—</span>
+          </div>
+          <div class="bar-track"><div class="bar-fill bar-ab" id="abBar" style="width:0%"></div></div>
+          <div class="compare-row" style="margin-top:8px">
+            <span class="compare-label">Nodes Saved</span>
+            <span class="compare-val saved" id="savedCount">—</span>
+          </div>
+          <div class="bar-track"><div class="bar-fill bar-saved" id="savedBar" style="width:0%"></div></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RIGHT: GRAPH ── -->
+  <div class="panel graph-col">
+    <div class="panel-header">
+      <span class="panel-header-dot" style="background:var(--green)"></span>
+      ANALYSIS GRAPH
+    </div>
+    <div class="graph-body">
+      <canvas id="nodeChart" width="280" height="180"></canvas>
+      <div class="section-label">WIN PROBABILITY</div>
+      <div class="prob-section" id="probSection">
+        <div class="prob-row">
+          <span class="prob-name">AI (O)</span>
+          <div class="prob-track"><div class="prob-fill prob-ai" id="probAI" style="width:0%"></div></div>
+          <span class="prob-pct" id="probAIPct">—</span>
+        </div>
+        <div class="prob-row">
+          <span class="prob-name">Human (X)</span>
+          <div class="prob-track"><div class="prob-fill prob-human" id="probHuman" style="width:0%"></div></div>
+          <span class="prob-pct" id="probHumanPct">—</span>
+        </div>
+        <div class="prob-row">
+          <span class="prob-name">Draw</span>
+          <div class="prob-track"><div class="prob-fill prob-draw" id="probDraw" style="width:0%"></div></div>
+          <span class="prob-pct" id="probDrawPct">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BOTTOM: CSP CONSTRAINTS ── -->
+  <div class="bottom-row">
+    <div class="constraint-card">
+      <div class="c-icon c1">⚖️</div>
+      <div>
+        <div class="c-title">CONSTRAINT 1 · TURN ALTERNATION</div>
+        <div class="c-desc">Players must alternate moves. The difference between X count and O count must never exceed 1.</div>
+        <span class="c-status ok" id="csp1Status">✓ SATISFIED</span>
+      </div>
+    </div>
+    <div class="constraint-card">
+      <div class="c-icon c2">🚫</div>
+      <div>
+        <div class="c-title">CONSTRAINT 2 · UNIQUE WINNER</div>
+        <div class="c-desc">Both players cannot win simultaneously. A board state where both X and O form a winning triple is invalid.</div>
+        <span class="c-status ok" id="csp2Status">✓ SATISFIED</span>
+      </div>
+    </div>
+    <div class="constraint-card">
+      <div class="c-icon c3">📐</div>
+      <div>
+        <div class="c-title">CONSTRAINT 3 · BOARD INTEGRITY</div>
+        <div class="c-desc">The board must always contain exactly 9 cells. Each cell holds '', 'X', or 'O' — no other values permitted.</div>
+        <span class="c-status ok" id="csp3Status">✓ SATISFIED</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ─────────────────────────────────────────
+   STATE
+───────────────────────────────────────── */
+let board      = Array(9).fill('');
+let isPaused   = false;
+let timer      = null;
+let currentData= [];
+let currentIndex = 0;
+let gameOver   = false;
+let mmNodes    = 0;
+let abNodes    = 0;
+let activeBtn  = null;
+let humanTurn = true;
+// Chart state
+let chartData  = { labels: [], mm: [], ab: [] };
+
+const WIN_PATTERNS = [
+  [0,1,2],[3,4,5],[6,7,8],
+  [0,3,6],[1,4,7],[2,5,8],
+  [0,4,8],[2,4,6]
+];
+
+/* ─────────────────────────────────────────
+   CANVAS CHART (draw bar chart)
+───────────────────────────────────────── */
+function drawChart() {
+  const canvas = document.getElementById('nodeChart');
+  const ctx    = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const PAD = { top: 20, right: 10, bottom: 40, left: 45 };
+  const iW = W - PAD.left - PAD.right;
+  const iH = H - PAD.top  - PAD.bottom;
+
+  ctx.clearRect(0, 0, W, H);
+
+  const labels = chartData.labels;
+  if (labels.length === 0) {
+    ctx.fillStyle = '#1e3a5f';
+    ctx.font = '11px Share Tech Mono, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('Run Minimax or Alpha-Beta to see graph', W/2, H/2);
+    return;
+  }
+
+  const allVals = [...chartData.mm, ...chartData.ab].filter(v => v > 0);
+  const maxVal  = allVals.length ? Math.max(...allVals) : 1;
+  const n       = labels.length;
+  const groupW  = iW / n;
+  const barW    = Math.min(groupW * 0.35, 18);
+
+  // Grid lines
+  ctx.strokeStyle = '#1e3a5f';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = PAD.top + iH - (i / 4) * iH;
+    ctx.beginPath();
+    ctx.moveTo(PAD.left, y);
+    ctx.lineTo(PAD.left + iW, y);
+    ctx.stroke();
+    ctx.fillStyle = '#64748b';
+    ctx.font = '9px Share Tech Mono, monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText(Math.round((i / 4) * maxVal), PAD.left - 4, y + 3);
+  }
+
+  // Bars
+  labels.forEach((lbl, i) => {
+    const cx = PAD.left + i * groupW + groupW / 2;
+
+    // Minimax bar (purple)
+    if (chartData.mm[i]) {
+      const bh = (chartData.mm[i] / maxVal) * iH;
+      const by = PAD.top + iH - bh;
+      const grad = ctx.createLinearGradient(0, by, 0, by + bh);
+      grad.addColorStop(0, '#a855f7');
+      grad.addColorStop(1, '#7c3aed');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.roundRect(cx - barW - 1, by, barW, bh, [3,3,0,0]);
+      ctx.fill();
+    }
+
+    // Alpha-Beta bar (red)
+    if (chartData.ab[i]) {
+      const bh = (chartData.ab[i] / maxVal) * iH;
+      const by = PAD.top + iH - bh;
+      const grad = ctx.createLinearGradient(0, by, 0, by + bh);
+      grad.addColorStop(0, '#ff6688');
+      grad.addColorStop(1, '#ff4466');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.roundRect(cx + 1, by, barW, bh, [3,3,0,0]);
+      ctx.fill();
+    }
+
+    // X label
+    ctx.fillStyle = '#64748b';
+    ctx.font = '9px Share Tech Mono, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(lbl, cx, PAD.top + iH + 14);
+  });
+
+  // Legend
+  ctx.fillStyle = '#7c3aed'; ctx.fillRect(PAD.left, H - 12, 10, 8);
+  ctx.fillStyle = '#94a3b8'; ctx.font = '9px Share Tech Mono, monospace';
+  ctx.textAlign = 'left';    ctx.fillText('Minimax', PAD.left + 13, H - 5);
+  ctx.fillStyle = '#ff4466'; ctx.fillRect(PAD.left + 75, H - 12, 10, 8);
+  ctx.fillStyle = '#94a3b8'; ctx.fillText('Alpha-Beta', PAD.left + 88, H - 5);
+}
+drawChart();
+
+/* ─────────────────────────────────────────
+   BOARD
+───────────────────────────────────────── */
+function createGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  const labels = ['A','B','C','D','E','F','G','H','I'];
+  for (let i = 0; i < 9; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.id = 'cell-' + i;
+    cell.innerHTML = `<span class="cell-label">${labels[i]}</span>`;
+    cell.onclick = () => {
+
+    if(gameOver)
+        return;
+
+    if(!humanTurn)
+        return;
+
+    if(board[i] !== '')
+        return;
+
+    board[i] = 'X';
+
+    humanTurn = false;
+
+    updateUI();
+    updateCSPStatus();
+
+    if(checkGameStatus())
+        return;
+
+    updateTurnLabel();
+};
+    grid.appendChild(cell);
+  }
+}
+
+function updateUI() {
+  for (let i = 0; i < 9; i++) {
+    const cell = document.getElementById('cell-' + i);
+    const val  = board[i];
+    cell.className = 'cell' + (val ? ' ' + val + ' taken' : '');
+    cell.innerHTML = `<span class="cell-label">${['A','B','C','D','E','F','G','H','I'][i]}</span>${val}`;
+  }
+}
+
+function updateTurnLabel() {
+  const x = board.filter(v => v === 'X').length;
+  const o = board.filter(v => v === 'O').length;
+  const turn = x === o ? 'X (You)' : 'O (AI)';
+  document.getElementById('turnIndicator').textContent = turn;
+  document.getElementById('statusText').textContent =
+    gameOver ? 'GAME OVER' : `READY · ${x === o ? 'HUMAN' : 'AI'} TURN`;
+}
+
+function checkGameStatus() {
+  for (const [a,b,c] of WIN_PATTERNS) {
+    if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+      gameOver = true;
+      // Highlight winning cells
+      [a,b,c].forEach(i => document.getElementById('cell-'+i).classList.add('win-cell'));
+      showGameOver(board[a] + ' WINS!', board[a] === 'X' ? 'win-x' : 'win-o');
+      return true;
+    }
+  }
+  if (!board.includes('')) {
+    gameOver = true;
+    showGameOver('DRAW MATCH', 'draw');
+    return true;
+  }
+  return false;
+}
+
+function showGameOver(msg, cls) {
+  const b = document.getElementById('gameoverBanner');
+  b.textContent = msg;
+  b.className = 'gameover-banner show ' + cls;
+  clearTimeout(timer);
+  document.getElementById('statusText').textContent = 'GAME OVER';
+}
+
+function resetBoard() {
+  board = Array(9).fill('');
+  humanTurn = true;
+  gameOver = false;
+  updateUI();
+  updateTurnLabel();
+  document.getElementById('output').innerHTML = '';
+  document.getElementById('gameoverBanner').className = 'gameover-banner';
+  currentData = []; currentIndex = 0;
+  clearTimeout(timer);
+  if (activeBtn) { activeBtn.classList.remove('active'); activeBtn = null; }
+  updateCSPStatus();
+}
+
+/* ─────────────────────────────────────────
+   CSP STATUS
+───────────────────────────────────────── */
+function updateCSPStatus() {
+  const x = board.filter(v => v === 'X').length;
+  const o = board.filter(v => v === 'O').length;
+
+  // C1: turn alternation
+  const c1 = Math.abs(x - o) <= 1;
+  setCSP('csp1Status', c1);
+
+  // C2: unique winner
+  let xWin = false, oWin = false;
+  for (const [a,b,c] of WIN_PATTERNS) {
+    if (board[a] === 'X' && board[b] === 'X' && board[c] === 'X') xWin = true;
+    if (board[a] === 'O' && board[b] === 'O' && board[c] === 'O') oWin = true;
+  }
+  const c2 = !(xWin && oWin);
+  setCSP('csp2Status', c2);
+
+  // C3: board integrity
+  const c3 = board.length === 9 && board.every(v => v === '' || v === 'X' || v === 'O');
+  setCSP('csp3Status', c3);
+}
+
+function setCSP(id, ok) {
+  const el = document.getElementById(id);
+  el.className = 'c-status ' + (ok ? 'ok' : 'err');
+  el.textContent = ok ? '✓ SATISFIED' : '✗ VIOLATED';
+}
+
+/* ─────────────────────────────────────────
+   ALGORITHM RUNNER
+───────────────────────────────────────── */
+const ROUTES = {
+  bfs: '/run_bfs', dfs: '/run_dfs', ucs: '/run_ucs',
+  greedy: '/run_greedy', astar: '/run_astar', csp: '/run_csp',
+  minimax: '/run_minimax', alphabeta: '/run_alphabeta'
+};
+
+function runAlgo(name, btn) {
+  if (gameOver) return;
+  clearTimeout(timer);
+  if (activeBtn) activeBtn.classList.remove('active');
+  activeBtn = btn;
+  btn.classList.add('active');
+
+  fetch(ROUTES[name], {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ board })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.message) {
+      appendLog(`<div class="log-entry"><span style="color:var(--yellow)">${data.message}</span></div>`);
+      btn.classList.remove('active'); activeBtn = null;
+      return;
+    }
+    currentData  = data;
+    currentIndex = 0;
+    isPaused     = false;
+    document.getElementById('pauseBtn').textContent = '⏸ Pause';
+    document.getElementById('output').innerHTML = '';
+    showNext();
+  });
+}
+
+/* ─────────────────────────────────────────
+   STEP RENDERER
+───────────────────────────────────────── */
+function showNext() {
+  if (isPaused || currentIndex >= currentData.length) {
+    if (!isPaused && activeBtn) { activeBtn.classList.remove('active'); activeBtn = null; }
+    return;
+  }
+
+  const node = currentData[currentIndex];
+
+  // ── Statistics block (Minimax / Alpha-Beta) ──
+  if (node.nodes_visited !== undefined || node.traversal_size !== undefined) {
+    const algo = node.algorithm || '';
+    const nv   = node.nodes_visited || 0;
+
+    // Update comparison panel
+    if (algo.toLowerCase().includes('minimax')) {
+      mmNodes = nv;
+      document.getElementById('mmCount').textContent = nv.toLocaleString();
+    } else if (algo.toLowerCase().includes('alpha')) {
+      abNodes = nv;
+      document.getElementById('abCount').textContent = nv.toLocaleString();
+    }
+
+    if (mmNodes > 0 || abNodes > 0) {
+      const mx = Math.max(mmNodes, abNodes);
+      document.getElementById('mmBar').style.width    = mx ? (mmNodes/mx*100)+'%' : '0%';
+      document.getElementById('abBar').style.width    = mx ? (abNodes/mx*100)+'%' : '0%';
+      const saved = mmNodes - abNodes;
+      document.getElementById('savedCount').textContent = saved > 0 ? saved.toLocaleString() : '—';
+      document.getElementById('savedBar').style.width   = saved > 0 && mmNodes > 0 ? (saved/mmNodes*100)+'%' : '0%';
+    }
+
+    // Add chart data point
+    const label = (chartData.labels.length + 1).toString();
+    chartData.labels.push(label);
+    if (algo.toLowerCase().includes('minimax')) {
+      chartData.mm.push(nv);
+      chartData.ab.push(chartData.ab[chartData.ab.length-1] || 0);
+    } else {
+      chartData.ab.push(nv);
+      chartData.mm.push(chartData.mm[chartData.mm.length-1] || 0);
+    }
+    drawChart();
+
+    // Update probability bars
+    if (node.ai_probability !== undefined) {
+      document.getElementById('probAI').style.width    = node.ai_probability + '%';
+      document.getElementById('probHuman').style.width = node.human_probability + '%';
+      document.getElementById('probDraw').style.width  = node.draw_probability + '%';
+      document.getElementById('probAIPct').textContent    = node.ai_probability + '%';
+      document.getElementById('probHumanPct').textContent = node.human_probability + '%';
+      document.getElementById('probDrawPct').textContent  = node.draw_probability + '%';
+    }
+
+    appendLog(`
+      <div class="log-entry log-stats">
+        <div class="stat-line"><span class="stat-key">Algorithm</span><span class="stat-val">${algo}</span></div>
+        <div class="stat-line"><span class="stat-key">Nodes Visited</span><span class="stat-val" style="color:var(--accent)">${nv.toLocaleString()}</span></div>
+        <div class="stat-line"><span class="stat-key">Traversal Size</span><span class="stat-val">${node.traversal_size || '—'}</span></div>
+        ${node.ai_probability !== undefined ? `
+        <div class="stat-line"><span class="stat-key">AI Win %</span><span class="stat-val" style="color:var(--red)">${node.ai_probability}%</span></div>
+        <div class="stat-line"><span class="stat-key">Human Win %</span><span class="stat-val" style="color:var(--x-color)">${node.human_probability}%</span></div>
+        <div class="stat-line"><span class="stat-key">Draw %</span><span class="stat-val" style="color:var(--yellow)">${node.draw_probability}%</span></div>
+        ` : ''}
+      </div>`);
+
+    currentIndex++;
+    timer = setTimeout(showNext, 800);
+    return;
+  }
+
+  // ── Best move announcement ──
+  if (node.best_move) {
+    humanTurn = true;
+    appendLog(`<div class="log-entry"><span class="best">★ BEST MOVE: ${node.best_move} &nbsp; SCORE: ${node.best_score}</span></div>`);
+  }
+
+  // ── State display ──
+  const s = node.state;
+  if (!s) { currentIndex++; timer = setTimeout(showNext, 800); return; }
+
+  board = s.slice();
+  updateUI();
+  updateCSPStatus();
+  updateTurnLabel();
+
+  if (checkGameStatus()) return;
+
+  const labels = ['A','B','C','D','E','F','G','H','I'];
+  // render 3 rows of board
+  const rows = [0,1,2].map(r => {
+    return [0,1,2].map(c => {
+      const v = s[r*3+c];
+      if (!v) return '<span style="color:var(--muted)">·</span>';
+      if (v === 'X') return `<span class="lx">X</span>`;
+      return `<span class="lo">O</span>`;
+    }).join(' ');
+  }).join('<br>');
+
+  const extras = [
+    node.cost      !== undefined ? `cost: ${node.cost}` : '',
+    node.heuristic !== undefined ? `h(n): ${node.heuristic}` : '',
+    node.f         !== undefined ? `f(n): ${node.f}` : '',
+    node.score     !== undefined ? `score: ${node.score}` : '',
+    node.alpha     !== undefined ? `α: ${node.alpha}` : '',
+    node.beta      !== undefined ? `β: ${node.beta}` : '',
+  ].filter(Boolean).join(' &nbsp; ');
+
+  appendLog(`
+    <div class="log-entry">
+      <span class="node-num">Node ${currentIndex+1}</span>
+      <div class="board-vis" style="font-family:'Share Tech Mono',monospace;line-height:1.6;margin:4px 0">${rows}</div>
+      <div class="meta">path: ${node.path ? node.path.join('→') : '—'} &nbsp; lv:${node.level??'—'}</div>
+      ${extras ? `<div class="meta" style="color:var(--text)">${extras}</div>` : ''}
+    </div>`);
+
+  currentIndex++;
+  timer = setTimeout(showNext, 600);
+}
+
+function appendLog(html) {
+  const out = document.getElementById('output');
+  out.innerHTML += html;
+  out.scrollTop = out.scrollHeight;
+}
+
+/* ─────────────────────────────────────────
+   PAUSE
+───────────────────────────────────────── */
+function togglePause() {
+  isPaused = !isPaused;
+  const btn = document.getElementById('pauseBtn');
+  if (isPaused) {
+    btn.textContent = '▶ Resume';
+    clearTimeout(timer);
+  } else {
+    btn.textContent = '⏸ Pause';
+    timer = setTimeout(showNext, 0);
+  }
+}
+
+/* ─────────────────────────────────────────
+   PROBABILISTIC ALGORITHMS
+───────────────────────────────────────── */
+function runConditionalProbability() {
+  fetch('/run_conditional_probability', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({board})
+  }).then(r=>r.json()).then(data => {
+    updateProbBars(data.probability*100 || 0, 0, 0);
+    appendLog(`<div class="log-entry log-stats">
+      <div class="stat-line"><span class="stat-key">Algorithm</span><span class="stat-val">Conditional Probability</span></div>
+      <div class="stat-line"><span class="stat-key">AI Wins</span><span class="stat-val" style="color:var(--red)">${data.ai_wins}</span></div>
+      <div class="stat-line"><span class="stat-key">Human Wins</span><span class="stat-val" style="color:var(--x-color)">${data.human_wins}</span></div>
+      <div class="stat-line"><span class="stat-key">Draws</span><span class="stat-val" style="color:var(--yellow)">${data.draws}</span></div>
+      <div class="stat-line"><span class="stat-key">P(AI Win)</span><span class="stat-val" style="color:var(--green)">${data.percentage}%</span></div>
+    </div>`);
+  });
+}
+
+function runBayes() {
+  fetch('/run_bayes', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({board})
+  }).then(r=>r.json()).then(data => {
+    appendLog(`<div class="log-entry log-stats">
+      <div class="stat-line"><span class="stat-key">Algorithm</span><span class="stat-val">Bayes Theorem</span></div>
+      <div class="stat-line"><span class="stat-key">Prior</span><span class="stat-val">${data.prior}</span></div>
+      <div class="stat-line"><span class="stat-key">Likelihood</span><span class="stat-val">${data.likelihood}</span></div>
+      <div class="stat-line"><span class="stat-key">Evidence</span><span class="stat-val">${data.evidence}</span></div>
+      <div class="stat-line"><span class="stat-key">Posterior</span><span class="stat-val" style="color:var(--green)">${data.posterior_percentage}%</span></div>
+    </div>`);
+  });
+}
+
+function runBayesianNetwork() {
+  fetch('/run_bayesian_network', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({board})
+  }).then(r=>r.json()).then(data => {
+    appendLog(`<div class="log-entry log-stats">
+      <div class="stat-line"><span class="stat-key">Algorithm</span><span class="stat-val">Bayesian Network</span></div>
+      <div class="stat-line"><span class="stat-key">Center Occupied</span><span class="stat-val">${data.center_occupied}</span></div>
+      <div class="stat-line"><span class="stat-key">Two in a Row</span><span class="stat-val">${data.two_in_row}</span></div>
+      <div class="stat-line"><span class="stat-key">AI Win Prob</span><span class="stat-val" style="color:var(--green)">${data.ai_win_probability}%</span></div>
+    </div>`);
+  });
+}
+
+function updateProbBars(ai, human, draw) {
+  document.getElementById('probAI').style.width    = ai + '%';
+  document.getElementById('probHuman').style.width = human + '%';
+  document.getElementById('probDraw').style.width  = draw + '%';
+  document.getElementById('probAIPct').textContent    = ai.toFixed(1) + '%';
+  document.getElementById('probHumanPct').textContent = human.toFixed(1) + '%';
+  document.getElementById('probDrawPct').textContent  = draw.toFixed(1) + '%';
+}
+
+/* ─────────────────────────────────────────
+   INIT
+───────────────────────────────────────── */
+createGrid();
+updateCSPStatus();
+</script>
+</body>
+</html>
