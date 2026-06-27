@@ -30,6 +30,8 @@ http://127.0.0.1:5000
 
 ##  Authors
 - **K. Bhanu Prakash** (2500040029)
+- **S.Dhathri**(2500040038)
+- **Kislay Kumar** (2500032706)
   
 ## 📚 References
 - Artificial Intelligence: A Modern Approach – Russell & Norvig
