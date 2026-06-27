@@ -30,7 +30,7 @@ http://127.0.0.1:5000
 
 ##  Authors
 - **K. Bhanu Prakash** (2500040029)
-- 
+  
 ## 📚 References
 - Artificial Intelligence: A Modern Approach – Russell & Norvig
 - Artificial Intelligence: Foundations of Computational Agents – Poole & Mackworth
